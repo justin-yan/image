@@ -1,0 +1,13 @@
+{
+  "template": "git@github.com:justin-yan/templates-cruft",
+  "commit": "16689cf537f0b1221b0a6d58f0b016f45dd3dc30",
+  "checkout": null,
+  "context": {
+    "cookiecutter": {
+      "image_name": "test",
+      "_template": "git@github.com:justin-yan/templates-cruft",
+      "_commit": "16689cf537f0b1221b0a6d58f0b016f45dd3dc30"
+    }
+  },
+  "directory": "image-public/docker-standard"
+}
