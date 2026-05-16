@@ -1,0 +1,7 @@
+failure-threshold: warning
+ignored:
+  - DL3007  # Allow using `latest` image version
+  - DL3008  # Allow not pinning versions for apt-get pkgs
+trustedRegistries:
+  - docker.io
+  - ghcr.io
