@@ -9,7 +9,7 @@ DEV_IMAGE:='ghcr.io/iomorphic/image/dev-image:latest'
 #######
 ### Custom VERSION Section Begin
 #######
-VERSION:='0.0.1'
+VERSION:='0.0.2'
 #######
 ### Custom VERSION Section End
 #######
