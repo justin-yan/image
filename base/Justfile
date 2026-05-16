@@ -1,0 +1,92 @@
+######
+### Project Variables
+######
+ORGANIZATION:='justin-yan'
+ASSET_CODE:='image'
+NAME:='base'
+DEV_IMAGE:='ghcr.io/iomorphic/image/dev-image:latest'
+
+#######
+### Custom VERSION Section Begin
+#######
+VERSION:='0.0.1'
+#######
+### Custom VERSION Section End
+#######
+
+######
+### Image Variables
+######
+LOCAL_IMAGE_NAME:= NAME + '_local'
+CANONICAL_REGISTRY_DNS:='ghcr.io'
+
+
+
+######
+### Environment
+######
+@default:
+    just --list
+
+@build:
+    docker buildx build \
+    --cache-to type=inline \
+    --cache-from type=registry,ref={{CANONICAL_REGISTRY_DNS}}/{{ORGANIZATION}}/{{ASSET_CODE}}/{{NAME}}:latest \
+    --load -t {{LOCAL_IMAGE_NAME}} .
+
+@run +COMMAND: build
+    #!/usr/bin/env bash
+    command={{quote(COMMAND)}}
+    docker run --rm -it {{LOCAL_IMAGE_NAME}} /bin/bash -lc "$command"
+
+@shell: build
+    docker run --rm -it {{LOCAL_IMAGE_NAME}} /bin/bash
+
+######
+### LintCycle
+######
+@verify: lint test
+
+@lint:
+    hadolint Dockerfile
+
+@test: build
+    echo "Customize with your own testing commands!"
+
+@virt +COMMAND:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    docker_args=(
+        --rm
+        -it
+        -v "{{justfile_directory()}}:{{justfile_directory()}}"
+        -v /var/run/docker.sock:/var/run/docker.sock
+        -v "$(command -v docker):/usr/bin/docker:ro"
+        -w "{{justfile_directory()}}"
+    )
+
+    docker run "${docker_args[@]}" {{DEV_IMAGE}} just {{COMMAND}}
+
+######
+### CICD
+######
+@cicd-pr: verify
+    echo "PR is successful!"
+
+cicd-register: build
+    #!/usr/bin/env bash
+    set -euxo pipefail
+    GIT_SHORTHASH=`git rev-parse --short HEAD`
+    docker tag {{LOCAL_IMAGE_NAME}} {{CANONICAL_REGISTRY_DNS}}/{{ORGANIZATION}}/{{ASSET_CODE}}/{{NAME}}:latest
+    docker tag {{LOCAL_IMAGE_NAME}} {{CANONICAL_REGISTRY_DNS}}/{{ORGANIZATION}}/{{ASSET_CODE}}/{{NAME}}:{{VERSION}}
+    docker tag {{LOCAL_IMAGE_NAME}} {{CANONICAL_REGISTRY_DNS}}/{{ORGANIZATION}}/{{ASSET_CODE}}/{{NAME}}:$GIT_SHORTHASH
+    docker image push --all-tags {{CANONICAL_REGISTRY_DNS}}/{{ORGANIZATION}}/{{ASSET_CODE}}/{{NAME}}
+
+######
+### Custom Commands Section Begin
+######
+
+######
+### Custom Commands Section End
+######
